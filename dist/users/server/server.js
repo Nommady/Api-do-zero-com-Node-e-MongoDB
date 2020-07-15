@@ -10,9 +10,7 @@ class Server {
     initializeDb() {
         mongoose.Promise = global.Promise;
         return mongoose.connect(environment_1.environment.db.url, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            useFindAndModify: false,
+            useMongoClient: true
         });
     }
     initRoutes(routers) {

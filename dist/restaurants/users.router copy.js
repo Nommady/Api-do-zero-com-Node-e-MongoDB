@@ -18,11 +18,6 @@ class UsersRouter extends router_1.Router {
                 .then(this.render(resp, next))
                 .catch(next);
         });
-        application.get("/users/name/:name", (req, resp, next) => {
-            users_model_1.User.find({ name: req.params.name })
-                .then(this.render(resp, next))
-                .catch(next);
-        });
         application.get('/users/:id', (req, resp, next) => {
             users_model_1.User.findById(req.params.id)
                 .then(this.render(resp, next))

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose = require("mongoose");
 const validators_1 = require("../common/validators");
+const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -35,27 +36,17 @@ const userSchema = new mongoose.Schema({
         }
     }
 });
-// userSchema.pre('save', function (next) {//não utilizar arrow function
-//   const users: User = this
-//   if (users.isModified('password')) {
-//     next()
-//   } else {
-//     bcrypt.hash(users.password, 10)
-//       .then(hash => {
-//         users.password = hash
-//         next()
-//     }).catch(next)
-//   }
-// })
-// userSchema.pre('findOneAndUpdate', function (next) {//não utilizar arrow function
-//   if (!this.getUpdate().password) {
-//     next()
-//   } else {
-//     bcrypt.hash(this.getUpdate().password, 10)
-//       .then(hash => {
-//         this.getUpdate().password = hash
-//         next()
-//     }).catch(next)
-//   }
-// })
+userSchema.pre('save', function (next) {
+    const users = this;
+    if (users.isModified('password')) {
+        next();
+    }
+    else {
+        bcrypt.hash(users.password, 10)
+            .then(hash => {
+            users.password = hash;
+            next();
+        }).catch(next);
+    }
+});
 exports.User = mongoose.model('User', userSchema);
