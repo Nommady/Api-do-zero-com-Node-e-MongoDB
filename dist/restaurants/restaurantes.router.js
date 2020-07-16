@@ -1,70 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.restaurantesRouter = void 0;
-const router_1 = require("../common/router");
-const restify_errors_1 = require("restify-errors");
+const model_router_1 = require("../common/model.router");
 const restaurantes_model_1 = require("./restaurantes.model");
-class RestaurantesRouter extends router_1.Router {
+const restify_errors_1 = require("restify-errors");
+class RestaurantesRouter extends model_router_1.ModelRouter {
     constructor() {
-        super();
+        super(restaurantes_model_1.Restaurantes);
+        this.findMenu = (req, resp, next) => {
+            restaurantes_model_1.Restaurantes.findById(req.params.id, '+menu')
+                .then(rest => {
+                if (!rest) {
+                    throw new restify_errors_1.NotFoundError("Restaurant not found");
+                }
+                else {
+                    resp.json(rest.menu);
+                    return next();
+                }
+            }).catch(next);
+        };
+        this.replaceMenu = (req, resp, next) => {
+            restaurantes_model_1.Restaurantes.findById(req.params.id).then(rest => {
+                if (!rest) {
+                    throw new restify_errors_1.NotFoundError('Restaurant not found');
+                }
+                else {
+                    rest.menu = req.body; //ARRAY de MenuItem
+                    return rest.save();
+                }
+            }).then(rest => {
+                resp.json(rest.menu);
+                return next();
+            }).catch(next);
+        };
         this.on('beforeRender', document => {
         });
     }
     applyRoutes(application) {
-        application.get('/restaurantes', (req, resp, next) => {
-            const limit = parseInt(req.query.limit);
-            const page = parseInt(req.query.page);
-            const skip = (page - 1) * limit;
-            restaurantes_model_1.Restaurantes.find().limit(limit).skip(skip)
-                .then(this.render(resp, next))
-                .catch(next);
-        });
-        application.get('/restaurantes/name/:name', (req, resp, next) => {
-            restaurantes_model_1.Restaurantes.find({ name: req.params.name })
-                .then(this.render(resp, next))
-                .catch(next);
-        });
-        application.get('/restaurantes/:id', (req, resp, next) => {
-            restaurantes_model_1.Restaurantes.findById(req.params.id)
-                .then(this.render(resp, next))
-                .catch(next);
-        });
-        application.post('/restaurantes', (req, resp, next) => {
-            let restaurantes = new restaurantes_model_1.Restaurantes(req.body);
-            restaurantes.save()
-                .then(this.render(resp, next))
-                .catch(next);
-        });
-        application.put('/restaurantes/:id', (req, resp, next) => {
-            const options = { runValidator: true, overwrite: true };
-            restaurantes_model_1.Restaurantes.updateOne({ _id: req.params.id }, req.body, options)
-                .exec().then(result => {
-                if (result.n) {
-                    return restaurantes_model_1.Restaurantes.findById(req.params.id);
-                }
-                else {
-                    throw new restify_errors_1.NotFoundError('Documento não encontrado');
-                }
-            }).then(this.render(resp, next))
-                .catch(next);
-        });
-        application.patch('/restaurantes/:id', (req, resp, next) => {
-            const options = { runValidator: true, new: true };
-            restaurantes_model_1.Restaurantes.findByIdAndUpdate(req.params.id, req.body, options)
-                .then(this.render(resp, next))
-                .catch(next);
-        });
-        application.del('/restaurantes/:id', (req, resp, next) => {
-            restaurantes_model_1.Restaurantes.deleteOne({ _id: req.params.id }).exec().then((cmdResult) => {
-                if (cmdResult.result.n) {
-                    resp.send(204);
-                }
-                else {
-                    throw new restify_errors_1.NotFoundError('Documento não encontrado');
-                }
-                return next();
-            }).catch(next);
-        });
+        application.get('/restaurantes', this.findAll);
+        application.get("/restaurantes/name/:name", this.findByName);
+        application.get('/restaurantes/:id', this.findById);
+        application.post('/restaurantes', this.save);
+        application.put('/restaurantes/:id', this.replace);
+        application.patch('/restaurantes/:id', this.update);
+        application.del('/restaurantes/:id', this.delete);
+        application.get('/restaurantes/:id/menu', this.findMenu);
+        application.put('/restaurantes/:id/menu', this.replaceMenu);
+        application.patch('/restaurantes/:id/menu', this.update);
     }
 }
 exports.restaurantesRouter = new RestaurantesRouter();

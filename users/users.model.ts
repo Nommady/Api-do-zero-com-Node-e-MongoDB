@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose'
 import { validateCPF } from '../common/validators'
-import * as bcrypt from "bcrypt"
+//import * as bcrypt from "bcrypt"
 
 
 export interface User extends mongoose.Document {

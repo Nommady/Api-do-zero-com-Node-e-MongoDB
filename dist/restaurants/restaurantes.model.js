@@ -28,7 +28,7 @@ const restaurantSchema = new mongoose.Schema({
         required: true
     },
     menu: {
-        type: [MenuItem],
+        type: [menuSchema],
         required: false,
         select: false
     }
