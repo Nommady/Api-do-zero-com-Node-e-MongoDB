@@ -36,9 +36,14 @@ class RestaurantesRouter extends model_router_1.ModelRouter {
         this.on('beforeRender', document => {
         });
     }
+    envelope(document) {
+        let resources = Object.assign({ _links: {} }, document.toJSON());
+        resources._links.self = `${this.model.collection.name}/${resources._id}`;
+        resources._links.menu = `${this.model.collection.name}/${resources._id}/menu`;
+        return resources;
+    }
     applyRoutes(application) {
-        application.get('/restaurantes', this.findAll);
-        application.get("/restaurantes/name/:name", this.findByName);
+        application.get({ path: '/restaurantes', version: '2.0.0' }, [this.findByEmail, this.findByName, this.findAll]);
         application.get('/restaurantes/:id', this.findById);
         application.post('/restaurantes', this.save);
         application.put('/restaurantes/:id', this.replace);

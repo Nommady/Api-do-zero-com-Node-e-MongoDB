@@ -8,17 +8,46 @@ class ModelRouter extends router_1.Router {
         super();
         this.model = model;
         this.findAll = (req, resp, next) => {
-            const limit = parseInt(req.query.limit);
-            const page = parseInt(req.query.page);
+            const token = req.header('token');
+            if (token != "lasanha") {
+                resp.status(401);
+                resp.json({ message: "Token invalido" });
+                return;
+            }
+            const limit = 5;
+            let page = parseInt(req.query._page || 1);
+            page = page > 0 ? page : 1;
             const skip = (page - 1) * limit;
-            this.model.find().limit(limit).skip(skip)
-                .then(this.renderAll(resp, next))
+            this.model.find()
+                .limit(limit)
+                .skip(skip)
+                .then(this.renderAll(resp, next, { page }))
                 .catch(next);
         };
         this.findByName = (req, resp, next) => {
-            this.model.find({ name: req.params.name })
-                .then(this.render(resp, next))
-                .catch(next);
+            if (req.query.name) {
+                this.model.find({ name: req.query.name })
+                    .then(this.renderAll(resp, next))
+                    .catch(error => {
+                    resp.send(400, { message: error.message });
+                });
+            }
+            else {
+                next();
+            }
+        };
+        this.findByEmail = (req, resp, next) => {
+            if (req.query.email) {
+                this.model.find({ email: req.query.email })
+                    .then(this.renderAll(resp, next))
+                    .catch(error => {
+                    resp.send(400, { message: error.message });
+                });
+                next();
+            }
+            else {
+                next();
+            }
         };
         this.findById = (req, resp, next) => {
             this.model.findById(req.params.id)
@@ -67,6 +96,24 @@ class ModelRouter extends router_1.Router {
             });
             next();
         };
+    }
+    envelope(document) {
+        let resources = Object.assign({ _links: {} }, document.toJSON());
+        resources._links.self = `${this.model.collection.name}/${resources._id}`;
+        return resources;
+    }
+    envelopeAll(documents, options = {}) {
+        const resources = {
+            _links: {},
+            items: documents
+        };
+        if (options.page) {
+            if (options.page > 1) {
+                resources._links.prev = `${this.model.collection.name}?_page=${options.page - 1}`;
+            }
+            resources._links.next = `${this.model.collection.name}?_page=${options.page + 1}`;
+        }
+        return resources;
     }
 }
 exports.ModelRouter = ModelRouter;

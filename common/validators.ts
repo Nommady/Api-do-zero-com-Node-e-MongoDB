@@ -1,4 +1,3 @@
-//adaptada de https://gist.github.com/joaohcrangel/8bd48bcc40b9db63bef7201143303937.js
 export const validateCPF = (cpf: string): boolean => {
     let sum, rest
 

@@ -14,7 +14,8 @@
     "mongoose": "^5.9.24",
     "nodemon": "^2.0.4",
     "restify": "^8.5.1",
-    "restify-errors": "^8.0.2"
+    "restify-errors": "^8.0.2",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "@types/mongoose": "^5.7.31",

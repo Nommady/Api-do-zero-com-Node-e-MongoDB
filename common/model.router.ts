@@ -3,22 +3,73 @@ import * as mongoose from 'mongoose'
 import { NotFoundError } from 'restify-errors'
 
 export abstract class ModelRouter<D extends mongoose.Document> extends Router {
+
   constructor(protected model: mongoose.Model<D>) {
     super()
+
   }
   
+
+  envelope(document: any): any {
+    let resources = Object.assign({ _links: {} }, document.toJSON())
+    resources._links.self = `${this.model.collection.name}/${resources._id}`
+    return resources
+  }
+  
+  envelopeAll(documents: any[],  options: any={}): any{
+    const resources: any = {
+      _links: {  },
+      items: documents
+    }
+    if (options.page) {
+      if (options.page > 1) {
+        resources._links.prev = `${this.model.collection.name}?_page=${options.page-1}`        
+      }
+      resources._links.next = `${this.model.collection.name}?_page=${options.page+1}`
+    }
+    return resources
+  }
+
+
   findAll = (req, resp, next) => {
-    const limit = parseInt(req.query.limit)
-    const page = parseInt(req.query.page)
+    const token = req.header('token');
+    if (token != "lasanha") {
+      resp.status(401)
+      resp.json({ message: "Token invalido" })
+      return
+    }
+    const limit = 5
+    let page = parseInt(req.query._page || 1)
+    page = page > 0 ? page : 1
     const skip = (page - 1) * limit
-    this.model.find().limit(limit).skip(skip)
-      .then(this.renderAll(resp, next))
+    this.model.find()
+      .limit(limit)
+      .skip(skip)
+      .then(this.renderAll(resp, next, { page }))
       .catch(next)
   }
   findByName = (req, resp, next) => {
-    this.model.find({ name: req.params.name })
-      .then(this.render(resp, next))
-      .catch(next)
+    if (req.query.name) {
+      this.model.find({ name: req.query.name })
+        .then(this.renderAll(resp, next))
+        .catch(error => {
+          resp.send(400, { message: error.message });
+        })
+    } else {
+      next()
+    }
+  }
+  findByEmail = (req, resp, next) => {
+    if (req.query.email) {
+      this.model.find({ email: req.query.email })
+        .then(this.renderAll(resp, next))
+        .catch(error => {
+          resp.send(400, { message: error.message });
+        })
+      next()
+    } else {
+      next()
+    }
   }
   findById = (req, resp, next) => {
     this.model.findById(req.params.id)
@@ -63,6 +114,6 @@ export abstract class ModelRouter<D extends mongoose.Document> extends Router {
     }).catch(error => {
       resp.send(400, { message: error.message });
     })
-  next()
+    next()
   }
 }

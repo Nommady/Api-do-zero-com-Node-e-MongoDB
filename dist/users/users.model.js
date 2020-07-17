@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
             validator: validators_1.validateCPF,
             message: '{PATH}: Invalid CPF ({VALUE})'
         }
-    }
+    },
 });
 // userSchema.pre('save', function (next) {//não utilizar arrow function
 //   const users: User = this
