@@ -6,7 +6,8 @@ import { validateCPF } from '../common/validators'
 export interface User extends mongoose.Document {
   name: string,
   email: string,
-  password: string
+  password: string,
+  token: any
 }
 
 const userSchema = new mongoose.Schema({
@@ -40,7 +41,10 @@ const userSchema = new mongoose.Schema({
       message: '{PATH}: Invalid CPF ({VALUE})'
     }
   },
-
+  token: {
+    type: String,
+    select: false,
+  }
 })
 // userSchema.pre('save', function (next) {//não utilizar arrow function
 //   const users: User = this

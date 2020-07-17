@@ -104,8 +104,8 @@ export abstract class ModelRouter<D extends mongoose.Document> extends Router {
       .catch(next)
   }
   delete = (req, resp, next) => {
-    this.model.deleteOne({ _id: req.params.id }).exec().then((cmdResult: any) => {
-      if (cmdResult.result.n) {
+    this.model.deleteOne({ _id: req.params.id }).exec().then((result: any) => {
+      if (result) {
         resp.send(204)
       } else {
         throw new NotFoundError('Documento não encontrado')

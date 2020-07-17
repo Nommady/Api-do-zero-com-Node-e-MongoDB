@@ -18,9 +18,10 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
-    "@types/mongoose": "^5.7.31",
     "@types/bcrypt": "^3.0.0",
+    "@types/mongoose": "^5.7.31",
     "@types/restify": "^8.4.2",
-    "@types/restify-errors": "^4.3.3"
+    "@types/restify-errors": "^4.3.3",
+    "@types/uuid": "^8.0.0"
   }
 }
